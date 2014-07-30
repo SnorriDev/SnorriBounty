@@ -1,0 +1,19 @@
+name: Bounty
+version: 1.1.1
+author: lambdaviking
+description: Allows you to places bounties on other player's heads with money
+main: snorri.bounty.Bounty
+depend: [Vault]
+commands:
+  bounty:
+    description: Allows you to take out a bounty on another player
+    usage: /bounty [-ao] <player> <$$$>
+  unbounty:
+    description: Removes a bounty on a player and refunds part of the cost
+    usage: /unbounty <player>
+  bounties:
+    description: Shows all bounties
+    usage: /bounties
+  bountyon:
+    description: Shows the total bounty on a player
+    usage: /bountyon <player>
