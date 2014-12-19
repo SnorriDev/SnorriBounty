@@ -4,9 +4,11 @@
 /*   4:    */ import java.io.IOException;
 /*   5:    */ import java.util.ArrayList;
 /*   6:    */ import java.util.logging.Logger;
+
 /*   7:    */ import net.milkbowl.vault.economy.Economy;
 /*   8:    */ import net.milkbowl.vault.economy.EconomyResponse;
 /*   9:    */ import net.milkbowl.vault.permission.Permission;
+
 /*  10:    */ import org.bukkit.Bukkit;
 /*  11:    */ import org.bukkit.OfflinePlayer;
 /*  12:    */ import org.bukkit.Server;
@@ -15,9 +17,7 @@
 /*  15:    */ import org.bukkit.configuration.file.FileConfiguration;
 /*  16:    */ import org.bukkit.configuration.file.YamlConfiguration;
 /*  17:    */ import org.bukkit.entity.Player;
-/*  18:    */ import org.bukkit.plugin.PluginManager;
 /*  19:    */ import org.bukkit.plugin.RegisteredServiceProvider;
-/*  20:    */ import org.bukkit.plugin.ServicesManager;
 /*  21:    */ import org.bukkit.plugin.java.JavaPlugin;
 /*  22:    */ 
 /*  23:    */ public class Bounty
@@ -29,6 +29,11 @@
 /*  29:    */   private static final String NAME = "Bounty";
 /*  30:    */   private static Economy economy;
 /*  31:    */   private static Permission permission;
+
+//TODO implement?
+
+//private static Scoreboard scoreboard;
+				//private static Objective objective;
 /*  32:    */   public static Server server;
 /*  33:    */   
 /*  34:    */   public void onEnable()
@@ -37,9 +42,10 @@
 /*  37: 38 */     this.config = getConfig();
 /*  38: 39 */     this.languageConfig = getCustomConfig("languageConfig.yml");
 /*  39: 40 */     server = getServer();
-/*  40: 41 */     getServer().getPluginManager().registerEvents(new BountyEventListener(), this);
+				  getServer().getPluginManager().registerEvents(new BountyEventListener(), this);
 /*  41: 42 */     setupEconomy();
 /*  42: 43 */     setupPermission();
+				  //setupScoreboard();
 /*  43: 44 */     loadConfig();
 /*  44:    */   }
 /*  45:    */   
@@ -61,6 +67,13 @@
 /*  61: 57 */     File c = new File(getDataFolder(), name);
 /*  62: 58 */     return YamlConfiguration.loadConfiguration(c);
 /*  63:    */   }
+
+				/*public static void updateScore(Player player) {
+					if (! player.getScoreboard().equals(scoreboard))
+						player.setScoreboard(scoreboard);
+					Score score = objective.getScore(player);
+					score.setScore((int) PlayerBounty.getSumOn(player)); 
+				}*/
 /*  64:    */   
 /*  65:    */   public boolean can(CommandSender sender, String p)
 /*  66:    */   {
@@ -85,7 +98,7 @@
 /*  85:    */   
 /*  86:    */   public String[] getArgs(String[] args)
 /*  87:    */   {
-/*  88: 82 */     ArrayList<String> result = new ArrayList();
+/*  88: 82 */     ArrayList<String> result = new ArrayList<String>();
 /*  89: 83 */     for (String arg : args) {
 /*  90: 84 */       if (arg.charAt(0) != '-') {
 /*  91: 85 */         result.add(arg);
@@ -94,6 +107,7 @@
 /*  94: 87 */     return (String[])result.toArray(args);
 /*  95:    */   }
 /*  96:    */   
+				
 /*  97:    */   public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
 /*  98:    */   {
 /*  99: 91 */     if ((cmd.getName().equalsIgnoreCase("bounty")) && (args.length > 1))
@@ -105,7 +119,7 @@
 /* 105:    */       }
 /* 106: 98 */       String flags = getFlags(args);
 /* 107: 99 */       args = getArgs(args);
-/* 108:100 */       OfflinePlayer target = getServer().getOfflinePlayer(args[0]);
+/* 108:100 */       OfflinePlayer target = server.getOfflinePlayer(args[0]);
 /* 109:101 */       if ((!target.hasPlayedBefore()) && (!flags.contains("o")))
 /* 110:    */       {
 /* 111:102 */         sender.sendMessage(Settings.getColor("failure") + LanguageSettings.getString("chat.newPlayer1", target.getName(), sender.getName(), ""));
@@ -119,7 +133,7 @@
 /* 119:109 */         sender.sendMessage(Settings.getColor("failure") + LanguageSettings.getString("chat.minimumBounty", target.getName(), sender.getName(), formatCurrency(Settings.getMin())));
 /* 120:110 */         return true;
 /* 121:    */       }
-/* 122:112 */       EconomyResponse result = getEconomy().withdrawPlayer(sender.getName(), amount);
+/* 122:112 */       EconomyResponse result = getEconomy().withdrawPlayer((OfflinePlayer) sender, amount);
 /* 123:113 */       if (!result.transactionSuccess())
 /* 124:    */       {
 /* 125:114 */         sender.sendMessage(Settings.getColor("failure") + LanguageSettings.getString("chat.outOfCash", target.getName(), sender.getName(), formatCurrency(amount)));
@@ -133,7 +147,9 @@
 /* 133:121 */           return true;
 /* 134:    */         }
 /* 135:124 */         PlayerBounty b = new PlayerBounty(target, (OfflinePlayer)sender, amount, flags.contains("a"));
-/* 136:125 */         sender.sendMessage(Settings.getColor("success") + LanguageSettings.getString("chat.bountyPlaced", target.getName(), b.getSetByPlayerName(), formatCurrency(amount)));
+/* 136:125 */         //if (target.getPlayer() != null)
+						//updateScore(target.getPlayer());
+					  sender.sendMessage(Settings.getColor("success") + LanguageSettings.getString("chat.bountyPlaced", target.getName(), b.getSetByPlayerName(), formatCurrency(amount)));
 /* 137:126 */         globalBroadcast(LanguageSettings.getString("broadcast.bountyPlaced", target.getName(), b.getSetByPlayerName(), formatCurrency(amount)));
 /* 138:127 */         return true;
 /* 139:    */       }
@@ -152,11 +168,23 @@
 /* 152:141 */       if (PlayerBounty.active.size() == 0) {
 /* 153:142 */         sender.sendMessage(Settings.getColor("blank") + LanguageSettings.getString("chat.none", "", "", ""));
 /* 154:    */       }
-/* 155:144 */       for (int i = 0; (i < PlayerBounty.active.size()) && (i < 5); i++)
+/* 155:144 */       for (int i = 0; (i < PlayerBounty.active.size()) && (i < Settings.getListLength()); i++)
 /* 156:    */       {
 /* 157:145 */         PlayerBounty bounty = (PlayerBounty)PlayerBounty.active.get(i);
-/* 158:146 */         sender.sendMessage(Settings.getColor("success") + LanguageSettings.getString("chat.bountyList", bounty.getTarget().getName(), bounty.getSetByPlayerName(), formatCurrency(bounty.getReward())));
-/* 159:    */       }
+
+//TODO: add real UUID conversion
+//this is quick fix (could also add anonymous name thing)
+//fixed for now
+
+					  String targetName = bounty.getTarget().getName();
+					  if (targetName == null)
+						  targetName = bounty.getTarget().getUniqueId().toString();
+					  
+					  //make this universal if it's an issue
+
+/* 158:146 */         sender.sendMessage(Settings.getColor("success") + LanguageSettings.getString("chat.bountyList", targetName, bounty.getSetByPlayerName(), formatCurrency(bounty.getReward())));
+					
+					}
 /* 160:148 */       return true;
 /* 161:    */     }
 /* 162:150 */     if ((cmd.getName().equalsIgnoreCase("bountyon")) && (args.length == 1))
@@ -182,7 +210,7 @@
 /* 182:    */       
 /* 183:171 */       OfflinePlayer setBy = (OfflinePlayer)sender;
 /* 184:172 */       double refund = PlayerBounty.getBounty(target, setBy).cancel();
-/* 185:173 */       getEconomy().depositPlayer(sender.getName(), refund);
+/* 185:173 */       getEconomy().depositPlayer((OfflinePlayer) sender, refund);
 /* 186:174 */       sender.sendMessage(Settings.getColor("success") + LanguageSettings.getString("chat.bountyCancelled", target.getName(), sender.getName(), formatCurrency(refund)));
 /* 187:175 */       return true;
 /* 188:    */     }
@@ -243,6 +271,12 @@
 /* 243:217 */     this.config.save("plugins/" + getName() + "/config.yml");
 /* 244:    */   }
 /* 245:    */   
+				/*private void setupScoreboard() {
+					scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+					objective = scoreboard.registerNewObjective("showbounty", "dummy");
+					objective.setDisplaySlot(DisplaySlot.BELOW_NAME);
+				}*/
+
 /* 246:    */   private boolean setupEconomy()
 /* 247:    */   {
 /* 248:221 */     RegisteredServiceProvider<Economy> ecoProvider = getServer().getServicesManager().getRegistration(Economy.class);
@@ -278,12 +312,12 @@
 /* 278:    */   
 /* 279:    */   public static void println(String msg)
 /* 280:    */   {
-/* 281:248 */     log.info("[Bounty] " + msg);
+/* 281:248 */     log.info("[" + NAME + "] " + msg);
 /* 282:    */   }
 /* 283:    */   
 /* 284:    */   public static void warn(String msg)
 /* 285:    */   {
-/* 286:252 */     log.warning("[Bounty] " + msg);
+/* 286:252 */     log.warning("[" + NAME + "] " + msg);
 /* 287:    */   }
 /* 288:    */   
 /* 289:    */   public static Economy getEconomy()
@@ -291,9 +325,9 @@
 /* 291:256 */     return economy;
 /* 292:    */   }
 /* 293:    */   
-/* 294:    */   public void setEconomy(Economy economy)
+/* 294:    */   public static void setEconomy(Economy economy)
 /* 295:    */   {
-/* 296:260 */     economy = economy;
+/* 296:260 */     Bounty.economy = economy;
 /* 297:    */   }
 /* 298:    */   
 /* 299:    */   public static Permission getPermission()
@@ -301,9 +335,9 @@
 /* 301:264 */     return permission;
 /* 302:    */   }
 /* 303:    */   
-/* 304:    */   public void setPermission(Permission permission)
+/* 304:    */   public static void setPermission(Permission permission)
 /* 305:    */   {
-/* 306:268 */     permission = permission;
+/* 306:268 */     Bounty.permission = permission;
 /* 307:    */   }
 /* 308:    */ }
 

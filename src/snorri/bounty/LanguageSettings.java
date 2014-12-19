@@ -34,7 +34,7 @@
 /* 34:   */   }
 /* 35:   */   
 /* 36:   */   public static String getString(String path, String targetName, String setByName, String formattedAmount)
-/* 37:   */   {
+/* 37:   */   {	
 /* 38:35 */     String raw = config.getString(path);
 /* 39:36 */     raw = raw.replace("$t", targetName);
 /* 40:37 */     raw = raw.replace("$s", setByName);

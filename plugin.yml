@@ -1,5 +1,5 @@
 name: Bounty
-version: 1.1.1
+version: 3.5.1
 author: lambdaviking
 description: Allows you to places bounties on other player's heads with money
 main: snorri.bounty.Bounty

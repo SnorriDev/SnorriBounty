@@ -1,19 +1,17 @@
 /*   1:    */ package snorri.bounty;
 /*   2:    */ 
 /*   3:    */ import java.util.ArrayList;
-/*   4:    */ import java.util.Iterator;
-/*   5:    */ import java.util.Set;
 /*   6:    */ import java.util.UUID;
+
 /*   7:    */ import org.bukkit.OfflinePlayer;
-/*   8:    */ import org.bukkit.Server;
 /*   9:    */ import org.bukkit.configuration.ConfigurationSection;
 /*  10:    */ import org.bukkit.configuration.file.FileConfiguration;
 /*  11:    */ import org.bukkit.entity.Player;
 /*  12:    */ 
 /*  13:    */ public class PlayerBounty
 /*  14:    */ {
-/*  15: 21 */   public static ArrayList<PlayerBounty> active = new ArrayList();
-/*  16: 22 */   public static ArrayList<PlayerBounty> completed = new ArrayList();
+/*  15: 21 */   public static ArrayList<PlayerBounty> active = new ArrayList<PlayerBounty>();
+/*  16: 22 */   public static ArrayList<PlayerBounty> completed = new ArrayList<PlayerBounty>();
 /*  17:    */   private OfflinePlayer target;
 /*  18:    */   private OfflinePlayer setBy;
 /*  19:    */   private OfflinePlayer doneBy;
@@ -31,6 +29,7 @@
 /*  31: 31 */     return player.getUniqueId().toString();
 /*  32:    */   }
 /*  33:    */   
+				@SuppressWarnings("deprecation")
 /*  34:    */   private static OfflinePlayer readPlayerSignature(String signature)
 /*  35:    */   {
 /*  36:    */     try
@@ -90,7 +89,7 @@
 /*  91: 89 */     for (int i = 0; i < active.size(); i++)
 /*  92:    */     {
 /*  93: 90 */       PlayerBounty bounty = (PlayerBounty)active.get(i);
-/*  94: 91 */       if (bounty.target == target)
+/*  94: 91 */       if (bounty.target.getUniqueId().equals(target.getUniqueId()))
 /*  95:    */       {
 /*  96: 92 */         totalReward += bounty.complete(doneBy);
 /*  97: 93 */         i--;
@@ -102,7 +101,7 @@
 /* 103:    */   public static PlayerBounty getBounty(OfflinePlayer target, OfflinePlayer setBy)
 /* 104:    */   {
 /* 105:100 */     for (PlayerBounty bounty : active) {
-/* 106:101 */       if ((bounty.target.getName().equals(target.getName())) && (bounty.setBy.getName().equals(setBy.getName()))) {
+/* 106:101 */       if ((bounty.target.getUniqueId().equals(target.getUniqueId())) && (bounty.setBy.getUniqueId().equals(setBy.getUniqueId()))) {
 /* 107:102 */         return bounty;
 /* 108:    */       }
 /* 109:    */     }
@@ -113,20 +112,20 @@
 /* 114:    */   {
 /* 115:107 */     double totalReward = 0.0D;
 /* 116:108 */     for (PlayerBounty bounty : active) {
-/* 117:109 */       if (bounty.target == target) {
+/* 117:109 */       if (bounty.target.getUniqueId().equals(target.getUniqueId())) {
 /* 118:110 */         totalReward += bounty.reward;
 /* 119:    */       }
 /* 120:    */     }
 /* 121:111 */     return totalReward;
 /* 122:    */   }
 /* 123:    */   
-/* 124:    */   public static ArrayList<String> removeBountiesBy(OfflinePlayer setBy)
+/* 124:    */   public static ArrayList<OfflinePlayer> removeBountiesBy(OfflinePlayer setBy)
 /* 125:    */   {
-/* 126:115 */     ArrayList<String> names = new ArrayList();
+/* 126:115 */     ArrayList<OfflinePlayer> names = new ArrayList<OfflinePlayer>();
 /* 127:116 */     for (int i = 0; i < completed.size(); i++)
 /* 128:    */     {
 /* 129:117 */       PlayerBounty bounty = (PlayerBounty)completed.get(i);
-/* 130:118 */       if (bounty.setBy == setBy)
+/* 130:118 */       if (bounty.setBy.getUniqueId().equals(setBy.getUniqueId()))
 /* 131:    */       {
 /* 132:119 */         names.add(bounty.remove());
 /* 133:120 */         i--;
@@ -137,11 +136,11 @@
 /* 138:    */   
 /* 139:    */   public static ArrayList<PlayerBounty> removeBountiesDoneBy(OfflinePlayer doneBy)
 /* 140:    */   {
-/* 141:127 */     ArrayList<PlayerBounty> names = new ArrayList();
+/* 141:127 */     ArrayList<PlayerBounty> names = new ArrayList<PlayerBounty>();
 /* 142:128 */     for (int i = 0; i < completed.size(); i++)
 /* 143:    */     {
 /* 144:129 */       PlayerBounty bounty = (PlayerBounty)completed.get(i);
-/* 145:130 */       if (bounty.doneBy == doneBy)
+/* 145:130 */       if (bounty.doneBy.getUniqueId().equals(doneBy.getUniqueId()))
 /* 146:    */       {
 /* 147:131 */         names.add(bounty);
 /* 148:132 */         bounty.remove();
@@ -186,10 +185,10 @@
 /* 187:166 */     return Settings.getReturnAmount(this.reward);
 /* 188:    */   }
 /* 189:    */   
-/* 190:    */   private String remove()
+/* 190:    */   private OfflinePlayer remove()
 /* 191:    */   {
 /* 192:170 */     completed.remove(this);
-/* 193:171 */     return this.target.getName();
+/* 193:171 */     return this.target;
 /* 194:    */   }
 /* 195:    */   
 /* 196:    */   public double getReward()

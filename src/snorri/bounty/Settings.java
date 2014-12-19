@@ -1,9 +1,11 @@
 /*  1:   */ package snorri.bounty;
 /*  2:   */ 
 /*  3:   */ import com.google.common.base.Joiner;
+
 /*  4:   */ import java.util.ArrayList;
 /*  5:   */ import java.util.HashMap;
 /*  6:   */ import java.util.List;
+
 /*  7:   */ import org.bukkit.ChatColor;
 /*  8:   */ import org.bukkit.World;
 /*  9:   */ import org.bukkit.configuration.ConfigurationSection;
@@ -11,15 +13,20 @@
 /* 11:   */ 
 /* 12:   */ public class Settings
 /* 13:   */ {
+	
+			//TODO: add a bounty "price" or "tax" similar to cancel penalty
+	
 /* 14:16 */   private static double minBounty = 50.0D;
+			  private static int listLength = 5;
 /* 15:17 */   private static double cancelPenalty = 0.25D;
+			  private static double awardHeadChance = 1.0D;
 /* 16:18 */   private static boolean markSkulls = true;
 /* 17:19 */   private static boolean globalBroadcast = true;
 /* 18:20 */   private static boolean allowAnonymous = true;
 /* 19:21 */   private static String anonymousName = "anonymous";
 /* 20:22 */   private static boolean enableInAllWorlds = true;
-/* 21:23 */   private static List<String> enabledWorlds = new ArrayList();
-/* 22:24 */   private static HashMap<String, String> colors = new HashMap();
+/* 21:23 */   private static List<String> enabledWorlds = new ArrayList<String>();
+/* 22:24 */   private static HashMap<String, String> colors = new HashMap<String, String>();
 /* 23:   */   
 /* 24:   */   static
 /* 25:   */   {
@@ -30,10 +37,18 @@
 /* 30:31 */     colors.put("blank", ChatColor.GRAY.toString());
 /* 31:   */   }
 /* 32:   */   
+			  public static boolean shouldAwardHead() {
+				  return Math.random() < awardHeadChance;
+			  }
+
 /* 33:   */   public static double getMin()
 /* 34:   */   {
 /* 35:35 */     return minBounty;
 /* 36:   */   }
+
+			 	public static int getListLength() {
+			 		return listLength;
+			 	}
 /* 37:   */   
 /* 38:   */   public static boolean allowAnonymous()
 /* 39:   */   {
@@ -73,7 +88,9 @@
 /* 73:   */   public static void readFromConfig(FileConfiguration config)
 /* 74:   */   {
 /* 75:68 */     minBounty = config.getDouble("minBounty");
+				listLength = config.getInt("listLength");
 /* 76:69 */     cancelPenalty = config.getDouble("cancelPenalty");
+				awardHeadChance = config.getDouble("awardHeadChance");
 /* 77:70 */     markSkulls = config.getBoolean("markSkulls");
 /* 78:71 */     globalBroadcast = config.getBoolean("globalBroadcast");
 /* 79:72 */     allowAnonymous = config.getBoolean("allowAnonymous");
@@ -85,14 +102,16 @@
 /* 85:   */     }
 /* 86:79 */     ConfigurationSection colors = config.createSection("colors");
 /* 87:80 */     for (String key : colors.getKeys(false)) {
-/* 88:81 */       ((HashMap)colors).put(key, colors.getString(key));
+/* 88:81 */       ((HashMap) colors).put(key, colors.getString(key));
 /* 89:   */     }
 /* 90:   */   }
 /* 91:   */   
 /* 92:   */   public static void writeToConfig(FileConfiguration config)
 /* 93:   */   {
 /* 94:85 */     config.set("minBounty", Double.valueOf(minBounty));
+				config.set("listLength", listLength);
 /* 95:86 */     config.set("cancelPenalty", Double.valueOf(cancelPenalty));
+				config.set("awardHeadChance", Double.valueOf(awardHeadChance));
 /* 96:87 */     config.set("markSkulls", Boolean.valueOf(markSkulls));
 /* 97:88 */     config.set("globalBroadcast", Boolean.valueOf(globalBroadcast));
 /* 98:89 */     config.set("allowAnonymous", Boolean.valueOf(allowAnonymous));
