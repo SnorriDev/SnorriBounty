@@ -43,6 +43,10 @@
 /*  44:    */   
 /*  45:    */   public static void writeToConfig(FileConfiguration config)
 /*  46:    */   {
+	
+					config.set("active", null);
+					config.set("completed", null);
+	
 /*  47: 45 */     for (PlayerBounty bounty : active)
 /*  48:    */     {
 /*  49: 46 */       config.set("active." + getPlayerSignature(bounty.getSetBy()) + "." + getPlayerSignature(bounty.getTarget()) + ".reward", Double.valueOf(bounty.getReward()));
